@@ -1,0 +1,2 @@
+Изучаю React по официальному туториалу, где нужно создать игру "крестики нолики" (tic-tac-toc).
+Ссылка: https://ru.reactjs.org/tutorial/tutorial.html
