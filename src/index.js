@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import './index.css';
 
 // пробую свой код
@@ -17,10 +17,25 @@ class MyFirstComponent extends React.Component {
 
 // клетка
 class Square extends React.Component {
+  // constructor чтобы инициализировать this.state
+  constructor(props) {
+    super(props);
+    //this.age = 0; // мой код
+    // инициализировал состояние state
+    this.state = {
+      value: null,
+    };
+  }
     render() {
       return (
-        <button className="square">
-          {this.props.value}
+        <button 
+        className="square" 
+        //onClick= {() => this.setState({value: ++this.age})} // с этим кодом моё свойство age будет возростать и показываться
+        onClick= {() => this.setState({value: 'x'})}
+        >
+          {this.state.value}
+          {/* для себя: this.state - видимо просто объект, который можно заполнить своими данными */}
+          {/* {console.log(this.state)}  */}
         </button>
       );
     }
@@ -28,8 +43,9 @@ class Square extends React.Component {
 
   // поле
   class Board extends React.Component {
-    renderSquare(i) {
-      return <Square value={i}/>;
+    
+    renderSquare(i) {  
+      return <Square value={i} />
     }
   
     render() {
