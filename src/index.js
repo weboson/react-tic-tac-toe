@@ -3,8 +3,6 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 // пробую свой код
-// Класс-компонент, должен начинаться с Большой буквы, 
-// иначе отобразит только так "<myFirstComp></myFirstComp>"
 class MyFirstComponent extends React.Component {
   render() {
     const text = "Текст из переменной 'text': Мой первый React - компонент. ";
@@ -17,35 +15,60 @@ class MyFirstComponent extends React.Component {
 
 // клетка
 class Square extends React.Component {
-  // constructor чтобы инициализировать this.state
-  constructor(props) {
-    super(props);
-    //this.age = 0; // мой код
-    // инициализировал состояние state
-    this.state = {
-      value: null,
-    };
-  }
+// Удалил constructor из Square, так как state инициализируется в Board в constructor
     render() {
       return (
         <button 
-        className="square" 
-        //onClick= {() => this.setState({value: ++this.age})} // с этим кодом моё свойство age будет возростать и показываться
-        onClick= {() => this.setState({value: 'x'})}
+          className="square" 
+        //  onClick это == handleClick(i) из Board 
+          onClick = {() => this.props.onClick()}
         >
-          {this.state.value}
-          {/* для себя: this.state - видимо просто объект, который можно заполнить своими данными */}
-          {/* {console.log(this.state)}  */}
+          {/* полчучается круговорот: {this.state.squares[i]} */}
+          {this.props.value}
+          {/*! мой код: посмотреть сам массив myVar = squares: Array(9).fill(null) 
+           9 массивов, потому что 9-раз рендерится button от Board  */ }
+          {console.log(this.props.myVar)} 
         </button>
       );
     }
   }
 
-  // поле
+
+// поле
   class Board extends React.Component {
-    
+// add constructor для состояния клеток: https://ru.reactjs.org/tutorial/tutorial.html#lifting-state-up
+   constructor(props) {
+    super(props);
+    // теперь Board хранит состояние (Square): 
+    // handleClick(i) => setState() => this.state.squares
+    this.state = {
+      squares: new Array(9).fill(null), // создали массив из девяти null (первоначально)  
+    }
+  };
+  
+  // обработчик события
+  handleClick(i) {
+    const squares = this.state.squares.slice(); // сделали копию массива из state
+    squares[i] = 'X'; // в зависимости куда клинули (i) устанавливается 'X'
+    // установитьСостояние({{value: 'X'}})
+    this.setState({squares: squares}); // установили состояние == копия массива
+    // Из прошлого: this.state.value внутри тега <button> и обработчик onClick={() => this.setState({value: 'X'})}.
+  }
+
+
     renderSquare(i) {  
-      return <Square value={i} />
+      // добавил в return скобки, чтобы JS не ставил ; после return, так как для удобства переход строки
+      return ( 
+        <Square 
+        // *Теперь мы передаём вниз два пропса из Board в Square: value и onClick
+        // передает элемент массива (X,O или null) под соответсвующим индексом, i - это вызов renderSquare(2). Но по-умолчанию == null, и поэтому клетка пустая 
+          value={this.state.squares[i]}  // странно, (в туториале) нет запятой и если поставить будет ошибка
+          myVar = {this.state.squares} //! мой код: чтобы посмотреть весь массив
+          onClick = {() => this.handleClick(i)} // передаем обработчик в виде пропса (аргумента/свойства)
+        // *onClick — это функция, которую Square вызывает при клике. Внесём следующие изменения в компонент Square:
+        />
+      )
+      
     }
   
     render() {
@@ -92,9 +115,6 @@ class Square extends React.Component {
   }
   
 // мой компонент, который показывает в объеденение Game и MyFirstComponent
-// по отдельности не получается и два блока <div> выдается ошибка. Сообщает, что в компоненте,
-// должен быть только один родитель.
-// И вывод, который я понял, нужно все компоненты строить, как матрешка, одна в другой, другая в следующей... наврное так
   class Content extends React.Component {
     render() {
       return (
@@ -108,9 +128,5 @@ class Square extends React.Component {
   // ========================================
   
   const root = ReactDOM.createRoot(document.getElementById("root"));
-  // root.render(<Game />, <MyFirstComponent />);  // не сработает, показыважет только первый
-  
-  // root.render(<Game />);  
-  // root.render(<MyFirstComponent />);  // и по порядку тоже не сработает
  root.render(<Content />);
  
