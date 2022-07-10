@@ -15,7 +15,7 @@ class MyFirstComponent extends React.Component {
 
 // клетка
 class Square extends React.Component {
-// Удалил constructor из Square, так как state инициализируется в Board в constructor
+// Удалил constructor из Square, так как state инициализируется в Board
     render() {
       return (
         <button 
@@ -23,11 +23,7 @@ class Square extends React.Component {
         //  onClick это == handleClick(i) из Board 
           onClick = {() => this.props.onClick()}
         >
-          {/* полчучается круговорот: {this.state.squares[i]} */}
           {this.props.value}
-          {/*! мой код: посмотреть сам массив myVar = squares: Array(9).fill(null) 
-           9 массивов, потому что 9-раз рендерится button от Board  */ }
-          {console.log(this.props.myVar)} 
         </button>
       );
     }
@@ -46,10 +42,10 @@ class Square extends React.Component {
     }
   };
   
-  // обработчик события
+  // обработчик
   handleClick(i) {
     const squares = this.state.squares.slice(); // сделали копию массива из state
-    squares[i] = 'X'; // в зависимости куда клинули (i) устанавливается 'X'
+    squares[i] = 'X'; // в зависимости куда клинули элемент по индексом (i) устанавливается 'X'
     // установитьСостояние({{value: 'X'}})
     this.setState({squares: squares}); // установили состояние == копия массива
     // Из прошлого: this.state.value внутри тега <button> и обработчик onClick={() => this.setState({value: 'X'})}.
@@ -57,15 +53,11 @@ class Square extends React.Component {
 
 
     renderSquare(i) {  
-      // добавил в return скобки, чтобы JS не ставил ; после return, так как для удобства переход строки
       return ( 
         <Square 
-        // *Теперь мы передаём вниз два пропса из Board в Square: value и onClick
-        // передает элемент массива (X,O или null) под соответсвующим индексом, i - это вызов renderSquare(2). Но по-умолчанию == null, и поэтому клетка пустая 
-          value={this.state.squares[i]}  // странно, (в туториале) нет запятой и если поставить будет ошибка
-          myVar = {this.state.squares} //! мой код: чтобы посмотреть весь массив
-          onClick = {() => this.handleClick(i)} // передаем обработчик в виде пропса (аргумента/свойства)
-        // *onClick — это функция, которую Square вызывает при клике. Внесём следующие изменения в компонент Square:
+        // пропсы
+          value={this.state.squares[i]}  // без запятых
+          onClick = {() => this.handleClick(i)} // передаем обработчик
         />
       )
       
@@ -125,7 +117,6 @@ class Square extends React.Component {
       );
     }
   }
-  // ========================================
   
   const root = ReactDOM.createRoot(document.getElementById("root"));
  root.render(<Content />);
