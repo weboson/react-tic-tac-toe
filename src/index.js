@@ -15,6 +15,7 @@ class MyFirstComponent extends React.Component {
 // клетка
 // ФУНКЦИОНАЛЬНЫЙ компонент - не имеет своего состояния state, но имеет render()
 // и чтобы его инициализировать нужно просто в аргумент взять props
+// https://ru.reactjs.org/tutorial/tutorial.html#function-components
 function Square(props) {
   return (
     <button className="square" onClick={props.onClick}>
@@ -22,22 +23,6 @@ function Square(props) {
     </button>
   )
 }
-
-// клетка
-// классовый компонент
-// class Square extends React.Component {
-//     render() {
-//       return (
-//         <button 
-//           className="square" 
-//         //  onClick это == handleClick(i) из Board 
-//           onClick = {() => this.props.onClick()}
-//         >
-//           {this.props.value}
-//         </button>
-//       );
-//     }
-//   }
 
 
 // поле
