@@ -20,6 +20,7 @@ function Square(props) {
   return (
     <button className="square" onClick={props.onClick}>
       {props.value}
+      {console.log(props.myVar)}
     </button>
   )
 }
@@ -27,23 +28,25 @@ function Square(props) {
 
 // поле
   class Board extends React.Component {
-// add constructor для состояния клеток: https://ru.reactjs.org/tutorial/tutorial.html#lifting-state-up
    constructor(props) {
     super(props);
-    // теперь Board хранит состояние (Square): 
-    // handleClick(i) => setState() => this.state.squares
     this.state = {
-      squares: new Array(9).fill(null), // создали массив из девяти null (первоначально)  
-    }
+      squares: new Array(9).fill(null), 
+      xIsNext: true, // флажок для очередности ‘X’ и ‘O’
+    };
   };
   
   // обработчик
   handleClick(i) {
-    const squares = this.state.squares.slice(); // сделали копию массива из state
-    squares[i] = 'X'; // в зависимости куда клинули элемент по индексом (i) устанавливается 'X'
-    // установитьСостояние({{value: 'X'}})
-    this.setState({squares: squares}); // установили состояние == копия массива
-    // Из прошлого: this.state.value внутри тега <button> и обработчик onClick={() => this.setState({value: 'X'})}.
+    const squares = this.state.squares.slice(); // изменяемая копия массива
+    if (calculateWinner(squares) || squares[i]) {
+      return; // СТОП ИГРА и клетки не заполняются
+    }
+    squares[i] = this.state.xIsNext ? 'X' : 'O'; // если флажок true, то 'X', иначе 'O'
+    this.setState({
+      squares: squares,
+      xIsNext: !this.state.xIsNext,
+    }); 
   }
 
 
@@ -53,14 +56,24 @@ function Square(props) {
         // пропсы
           value={this.state.squares[i]}  // без запятых
           onClick = {() => this.handleClick(i)} // передаем обработчик
+          myVar = {this.state.squares} //! мой код: чтобы посмотреть весь массив
         />
       )
       
     }
   
     render() {
-      const status = 'Next player: X';
-  
+      const winner = calculateWinner(this.state.squares);
+      let status;
+      // условие на ВЫВОД ТЕКСТА: либо кто-то выиграл, либо кто следующий ходит
+      if (winner) { // если кто-то займет все выигрышные позиции первый. Кроме null
+        status = `Выиграл ${winner}`;
+      } else {
+        // status = "Следующий ход: " + (this.state.xIsNext ? 'X' : 'O');
+        // this.state.xIsNext - идет из обработчика handleClick(i)
+        status = `Игрок ходит: ${this.state.xIsNext ? 'X' : 'O'}` // очередность 
+      }
+    
       return (
         <div>
           <div className="status">{status}</div>
@@ -116,3 +129,38 @@ function Square(props) {
   const root = ReactDOM.createRoot(document.getElementById("root"));
  root.render(<Content />);
  
+
+
+ // функция проверки победителя
+ function calculateWinner(squares) {
+// выйгрышные позиции
+// как помним, в render() в Board вызов осуществляется (пример: this.renderSquare(6)) и раскладывается нумированно
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  return null;
+};
+
+// Пример массива square = ['X', 'O', 'X', 'O', 'X', 'O', null, 'O', 'X']
+// Пример выигрышной позиции [0, 4, 8] 
+// const [a, b, c] = [0, 4, 8]
+// if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c])
+// if (squares[0] && squares[0] === squares[4] && squares[0] === squares[8])
+// if (    'X'    &&    'X'     ===     'X'    &&    'X'     ===    'X'   ) {
+//    return squares[a];
+//    return 'X' // то есть выиграл X 
+// }
+// Происходит, каждый клик, перебор всего массива на совпадения позиций, если на win-позиции кто-то (x/o) займет все места, то он выиграл
