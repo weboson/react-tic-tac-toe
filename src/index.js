@@ -13,14 +13,10 @@ class MyFirstComponent extends React.Component {
   }
 }
 // клетка
-// ФУНКЦИОНАЛЬНЫЙ компонент - не имеет своего состояния state, но имеет render()
-// и чтобы его инициализировать нужно просто в аргумент взять props
-// https://ru.reactjs.org/tutorial/tutorial.html#function-components
 function Square(props) {
   return (
     <button className="square" onClick={props.onClick}>
       {props.value}
-      {console.log(props.myVar)}
     </button>
   )
 }
@@ -28,55 +24,21 @@ function Square(props) {
 
 // поле
   class Board extends React.Component {
-   constructor(props) {
-    super(props);
-    this.state = {
-      squares: new Array(9).fill(null), 
-      xIsNext: true, // флажок для очередности ‘X’ и ‘O’
-    };
-  };
-  
-  // обработчик
-  handleClick(i) {
-    const squares = this.state.squares.slice(); // изменяемая копия массива
-    if (calculateWinner(squares) || squares[i]) {
-      return; // СТОП ИГРА и клетки не заполняются
-    }
-    squares[i] = this.state.xIsNext ? 'X' : 'O'; // если флажок true, то 'X', иначе 'O'
-    this.setState({
-      squares: squares,
-      xIsNext: !this.state.xIsNext,
-    }); 
-  }
-
 
     renderSquare(i) {  
       return ( 
         <Square 
         // пропсы
-          value={this.state.squares[i]}  // без запятых
-          onClick = {() => this.handleClick(i)} // передаем обработчик
-          myVar = {this.state.squares} //! мой код: чтобы посмотреть весь массив
+          value={this.props.squares[i]}  // без запятых
+          onClick = {() => this.props.onClick(i)} // передаем обработчик: Game(handleClick()) => Board(onClick()) => Square
         />
-      )
+      );
       
     }
   
-    render() {
-      const winner = calculateWinner(this.state.squares);
-      let status;
-      // условие на ВЫВОД ТЕКСТА: либо кто-то выиграл, либо кто следующий ходит
-      if (winner) { // если кто-то займет все выигрышные позиции первый. Кроме null
-        status = `Выиграл ${winner}`;
-      } else {
-        // status = "Следующий ход: " + (this.state.xIsNext ? 'X' : 'O');
-        // this.state.xIsNext - идет из обработчика handleClick(i)
-        status = `Игрок ходит: ${this.state.xIsNext ? 'X' : 'O'}` // очередность 
-      }
-    
+    render() {    
       return (
         <div>
-          <div className="status">{status}</div>
           <div className="board-row">
             {this.renderSquare(0)}
             {this.renderSquare(1)}
@@ -97,16 +59,57 @@ function Square(props) {
     }
   }
 
+
   // игра
   class Game extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        history: [{squares: Array(9).fill(null),}],
+        xIsNext: true,
+      }
+    };
+  // обработчик
+  handleClick(i) { // передается в виде props в board 
+    const history = this.state.history; // пример: history = [{ squares: [null, null, null, null, null, null, null, null, null]},  {squares: [null, null, null, null, null, null, null, null, null]}, ... }],
+    const current = history[history.length - 1]; // текущий объект= { squares: [null, null, null, null, null, null, null, null, null]}
+    const squares = current.squares.slice(); // копия массива: [null, null, null, null, null, null, null, null, null]
+    if (calculateWinner(squares) || squares[i]) { // пример: if ('X' || 'X') или ('null' || 'null') 
+      return; // СТОП ИГРА и клетки не заполняются
+    }
+    squares[i] = this.state.xIsNext ? 'X' : 'O'; // если флажок true, то 'X', иначе 'O'
+    this.setState({ // установить состояние на:
+      // то есть, прибавляется к истории еще один массив ходов, и как бы история увеличивается на еще одну историю состояний каждой клетки
+      history: history.concat([{squares: squares,}]), // history:  [{ squares: [null, ...]},  {squares: ['x', ...]}, ... }] + копия массива: {squares: [null, null, null, null, null, null, null, null, null]}
+      xIsNext: !this.state.xIsNext, // после срабатывания обработчика на клик происходит смена игроков (true на !true)
+    }); 
+  }
+
+
+
     render() {
+      // тоже самое что и в handleClick фиксируются история, текущее состояние, и еще кто выиграл (далее выводит победителя)
+      const history = this.state.history;
+      const current = history[history.length - 1];
+      const winner = calculateWinner(current.squares); // кто победил: например "x"
+      let status;
+      if (winner) { // если (не null), то 
+        status = `Выиграл: ${winner}`; // Выиграл: 'X'
+      } else {
+        status = `Cледующий ход:  ${(this.state.xIsNext ? 'X' : 'O')}`; // Cледующий ход: 'O'
+      }
+ 
       return (
         <div className="game">
           <div className="game-board">
-            <Board />
+            <Board 
+              squares = {current.squares} // текущее состояние клеток - в виде props - пример current.squares == [null, "X", null, "O", "X", "X", null, "O", "O"]
+              // обработчик возращается в виде props в board 
+              onClick = {(i) => this.handleClick(i) } // так как => this берет из вне.
+            />
           </div>
           <div className="game-info">
-            <div>{/* status */}</div>
+            <div>{status}</div>
             <ol>{/* TODO */}</ol>
           </div>
         </div>
@@ -114,7 +117,7 @@ function Square(props) {
     }
   }
   
-// мой компонент, который показывает в объеденение Game и MyFirstComponent
+// МОЙ компонент, который показывает в объеденение Game и MyFirstComponent
   class Content extends React.Component {
     render() {
       return (
@@ -164,3 +167,4 @@ function Square(props) {
 //    return 'X' // то есть выиграл X 
 // }
 // Происходит, каждый клик, перебор всего массива на совпадения позиций, если на win-позиции кто-то (x/o) займет все места, то он выиграл
+
