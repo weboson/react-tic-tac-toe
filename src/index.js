@@ -18,13 +18,12 @@ function Square(props) {
     <button className="square" onClick={props.onClick}>
       {props.value}
     </button>
-  )
+  );
 }
 
 
 // поле
   class Board extends React.Component {
-
     renderSquare(i) {  
       return ( 
         <Square 
@@ -65,13 +64,16 @@ function Square(props) {
     constructor(props) {
       super(props);
       this.state = {
-        history: [{squares: Array(9).fill(null),}],
-        xIsNext: true,
-      }
-    };
+        history: [{squares: Array(9).fill(null)}],
+        stepNumber: 0,
+        xIsNext: true
+      };
+    }
   // обработчик
   handleClick(i) { // передается в виде props в board 
-    const history = this.state.history; // пример: history = [{ squares: [null, null, null, null, null, null, null, null, null]},  {squares: [null, null, null, null, null, null, null, null, null]}, ... }],
+  // было
+  //const history = this.state.history; // пример: history = [{ squares: [null, null, null, null, null, null, null, null, null]},  {squares: [null, null, null, null, null, null, null, null, null]}, ... }],
+    const history = this.state.history.slice(0, this.state.stepNumber + 1); // slice(start, end) – создаёт новый массив, копируя в него элементы с позиции start до end (не включая end).
     const current = history[history.length - 1]; // текущий объект= { squares: [null, null, null, null, null, null, null, null, null]}
     const squares = current.squares.slice(); // копия массива: [null, null, null, null, null, null, null, null, null]
     if (calculateWinner(squares) || squares[i]) { // пример: if ('X' || 'X') или ('null' || 'null') 
@@ -81,16 +83,29 @@ function Square(props) {
     this.setState({ // установить состояние на:
       // то есть, прибавляется к истории еще один массив ходов, и как бы история увеличивается на еще одну историю состояний каждой клетки
       history: history.concat([{squares: squares}]), // history:  [{ squares: [null, ...]},  {squares: ['x', ...]}, ... }] + копия массива: {squares: [null, null, null, null, null, null, null, null, null]}
-      xIsNext: !this.state.xIsNext, // после срабатывания обработчика на клик происходит смена игроков (true на !true)
+      stepNumber: history.length, // обновляем (+1), при очередном шаге
+      xIsNext: !this.state.xIsNext // после срабатывания обработчика на клик происходит смена игроков (true на !true)
     }); 
   }
+
+  // метод шагов ходов
+  jumpTo(step) { // jumpTo(move -  индекс от history)
+    // вторая установка состояния в Game
+    //! в React обновления состояния (satState) объединяются
+    this.setState({
+      stepNumber: step, // идентифицирован как свойство в constructor {...stepNumper: 0,}
+      xIsNext: (step % 2) === 0 // true если step(move - индекс элмента/шага) четный
+    });
+  }
+
 
 
 
     render() {
       // тоже самое что и в handleClick фиксируются история, текущее состояние, и еще кто выиграл (далее выводит победителя)
       const history = this.state.history; // пример: history = [{ squares: [null, null, null, null, null, null, null, null, null]},  {squares: [null, null, null, null, null, null, null, null, null]}, ... }],
-      const current = history[history.length - 1]; // текущий объект= { squares: [null, null, null, null, null, null, null, null, null]}
+      //const current = history[history.length - 1]; // текущий объект= { squares: [null, null, null, null, null, null, null, null, null]}
+      const current = history[this.state.stepNumber];
       const winner = calculateWinner(current.squares); // кто победил: например "x"
       
       // создаем список шагов:
@@ -124,7 +139,7 @@ function Square(props) {
             <Board 
               squares = {current.squares} // текущее состояние клеток - в виде props - пример current.squares == [null, "X", null, "O", "X", "X", null, "O", "O"]
               // обработчик возращается в виде props в board 
-              onClick = {(i) => this.handleClick(i) } // так как => this берет из вне.
+              onClick = {i => this.handleClick(i) } // так как => this берет из вне.
             />
           </div>
           <div className="game-info">
