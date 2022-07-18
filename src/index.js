@@ -104,7 +104,7 @@ function Square(props) {
         'К началу игры'; // 'К началу игры'
           // СПИСОК шагов
         return (        
-          <li>
+          <li key={move}>
             <button onClick={() => this.jumpTo(move)}>{desc}</button>
           </li>
         );
