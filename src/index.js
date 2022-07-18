@@ -80,7 +80,7 @@ function Square(props) {
     squares[i] = this.state.xIsNext ? 'X' : 'O'; // если флажок true, то 'X', иначе 'O'
     this.setState({ // установить состояние на:
       // то есть, прибавляется к истории еще один массив ходов, и как бы история увеличивается на еще одну историю состояний каждой клетки
-      history: history.concat([{squares: squares,}]), // history:  [{ squares: [null, ...]},  {squares: ['x', ...]}, ... }] + копия массива: {squares: [null, null, null, null, null, null, null, null, null]}
+      history: history.concat([{squares: squares}]), // history:  [{ squares: [null, ...]},  {squares: ['x', ...]}, ... }] + копия массива: {squares: [null, null, null, null, null, null, null, null, null]}
       xIsNext: !this.state.xIsNext, // после срабатывания обработчика на клик происходит смена игроков (true на !true)
     }); 
   }
@@ -89,9 +89,28 @@ function Square(props) {
 
     render() {
       // тоже самое что и в handleClick фиксируются история, текущее состояние, и еще кто выиграл (далее выводит победителя)
-      const history = this.state.history;
-      const current = history[history.length - 1];
+      const history = this.state.history; // пример: history = [{ squares: [null, null, null, null, null, null, null, null, null]},  {squares: [null, null, null, null, null, null, null, null, null]}, ... }],
+      const current = history[history.length - 1]; // текущий объект= { squares: [null, null, null, null, null, null, null, null, null]}
       const winner = calculateWinner(current.squares); // кто победил: например "x"
+      
+      // создаем список шагов:
+      // массив moves содерждит список шагов
+      // step = { squares: ['x', null, 'o', 'o', null, 'x', 'x', null, null]} 
+      // move = текущий индекс (номер) элемента в массиве history 
+      const moves = history.map((step, move) => {  // step не используется                                          
+        const desc = move ? // если индекс элемента !== 0 (не первый массив созданный нами из одних null), то
+        'Перейти к ходу #' + move  // 'Перейти к ходу #' + индекс массива
+                :           // если нет, то
+        'К началу игры'; // 'К началу игры'
+          // СПИСОК шагов
+        return (        
+          <li>
+            <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          </li>
+        );
+      });
+      
+      
       let status;
       if (winner) { // если (не null), то 
         status = `Выиграл: ${winner}`; // Выиграл: 'X'
@@ -110,7 +129,7 @@ function Square(props) {
           </div>
           <div className="game-info">
             <div>{status}</div>
-            <ol>{/* TODO */}</ol>
+            <ol>{moves}</ol>
           </div>
         </div>
       );
